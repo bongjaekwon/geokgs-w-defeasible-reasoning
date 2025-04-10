@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns="http://www.semanticweb.org/geokg-defeasible#"
+         xml:base="http://www.semanticweb.org/geokg-defeasible"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:xml="http://www.w3.org/XML/1998/namespace"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:geo="http://www.opengis.net/ont/geosparql#"
+         xmlns:prov="http://www.w3.org/ns/prov#">
+
+  <owl:Ontology rdf:about="http://www.semanticweb.org/geokg-defeasible">
+    <rdfs:comment>GeoKG Defeasible Reasoning Ontology</rdfs:comment>
+    <rdfs:label>GeoKG-DR</rdfs:label>
+    <owl:imports rdf:resource="http://www.opengis.net/ont/geosparql"/>
+    <owl:imports rdf:resource="http://www.w3.org/ns/prov-o"/>
+  </owl:Ontology>
+
+  <!-- Classes -->
+  <owl:Class rdf:ID="GeospatialEntity">
+    <rdfs:comment>Represents a geospatial entity, such as a geographical location or feature.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="geo:Feature"/>
+  </owl:Class>
+
+  <owl:Class rdf:ID="PointOfInterest">
+    <rdfs:comment>Represents a specific point of interest, which is a subclass of GeospatialEntity.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#GeospatialEntity"/>
+  </owl:Class>
+
+  <owl:Class rdf:ID="DefeasibleRule">
+    <rdfs:comment>A rule that is defeasible, meaning it can be overridden by higher-priority rules or new information.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="prov:Plan"/>
+  </owl:Class>
+
+  <owl:Class rdf:ID="SimilarityAssessment">
+    <rdfs:comment>Represents an assessment of similarity between two geospatial entities.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="prov:Activity"/>
+  </owl:Class>
+
+  <owl:Class rdf:ID="ConflictResolutionStrategy">
+    <rdfs:comment>A strategy used to resolve conflicts between rules or geospatial entities.</rdfs:comment>
+  </owl:Class>
+
+  <!-- Object Properties -->
+  <owl:ObjectProperty rdf:ID="hasSource">
+    <rdfs:comment>Indicates the source entity for a geospatial entity.</rdfs:comment>
+    <rdfs:domain rdf:resource="#GeospatialEntity"/>
+    <rdfs:range rdf:resource="prov:Entity"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:ID="nearby">
+    <rdfs:comment>Indicates a spatial relationship where one geospatial entity is located near another.</rdfs:comment>
+    <rdfs:domain rdf:resource="#GeospatialEntity"/>
+    <rdfs:range rdf:resource="#GeospatialEntity"/>
+    <rdfs:subPropertyOf rdf:resource="geo:sfWithin"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:ID="triggersRule">
+    <rdfs:comment>Indicates that a similarity assessment triggers a defeasible rule.</rdfs:comment>
+    <rdfs:domain rdf:resource="#SimilarityAssessment"/>
+    <rdfs:range rdf:resource="#DefeasibleRule"/>
+  </owl:ObjectProperty>
+
+  <!-- Data Properties -->
+  <owl:DatatypeProperty rdf:ID="hasPriority">
+    <rdfs:comment>Specifies the priority of a defeasible rule, where a higher number indicates higher priority.</rdfs:comment>
+    <rdfs:domain rdf:resource="#DefeasibleRule"/>
+    <rdfs:range rdf:resource="xsd:integer"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:ID="similarityScore">
+    <rdfs:comment>Represents the score that quantifies the similarity between two geospatial entities, based on an assessment.</rdfs:comment>
+    <rdfs:domain rdf:resource="#SimilarityAssessment"/>
+    <rdfs:range rdf:resource="xsd:double"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:ID="ruleContent">
+    <rdfs:comment>Contains the logical content or condition of a defeasible rule in textual form.</rdfs:comment>
+    <rdfs:domain rdf:resource="#DefeasibleRule"/>
+    <rdfs:range rdf:resource="xsd:string"/>
+  </owl:DatatypeProperty>
+
+  <!-- Individuals -->
+  <ConflictResolutionStrategy rdf:ID="PriorityBasedResolution">
+    <rdfs:label>Priority-based Conflict Resolution</rdfs:label>
+    <rdfs:comment>A conflict resolution strategy that resolves conflicts by considering the priority of conflicting rules.</rdfs:comment>
+  </ConflictResolutionStrategy>
+
+  <DefeasibleRule rdf:ID="ProximitySimilarityRule">
+    <rdfs:comment>Proximity-based similarity rule: If two entities are nearby and of the same type, they are considered similar.</rdfs:comment>
+    <ruleContent rdf:datatype="xsd:string">
+      USUALLY IF ?a nearby ?b AND sameType(?a,?b) THEN similar(?a,?b)
+    </ruleContent>
+    <hasPriority rdf:datatype="xsd:integer">2</hasPriority>
+  </DefeasibleRule>
+
+  <DefeasibleRule rdf:ID="FunctionOverrideRule">
+    <rdfs:comment>Function-based override rule: If two entities serve different functions, they are not considered similar.</rdfs:comment>
+    <ruleContent rdf:datatype="xsd:string">
+      USUALLY IF differentFunction(?a,?b) THEN ¬similar(?a,?b)
+    </ruleContent>
+    <hasPriority rdf:datatype="xsd:integer">3</hasPriority>
+  </DefeasibleRule>
+
+</rdf:RDF>
